@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jscodeshift": "^0.5.1"
+    "jscodeshift": "^0.5.1",
+    "lodash-es": "^4.17.10"
   },
   "devDependencies": {
     "babel": "^6.23.0",

@@ -12,3 +12,17 @@ export class TestComponentB extends PureComponent {
     return null;
   }
 }
+
+export function createComponent() {
+  return class TestComponentC extends PureComponent {
+    render() {
+      return null;
+    }
+  };
+}
+
+export class TestComponentD extends PureComponent {
+  render() {
+    return null;
+  }
+}

@@ -15,3 +15,20 @@ export class TestComponentB extends Component {
     return null;
   }
 }
+
+export function createComponent() {
+  return class TestComponentC extends Component {
+    shouldComponentUpdate = shouldPureComponentUpdate;
+    render() {
+      return null;
+    }
+  };
+}
+
+export class TestComponentD extends Component {
+  render() {
+    return null;
+  }
+}
+
+TestComponentD.prototype.shouldComponentUpdate = shouldPureComponentUpdate;

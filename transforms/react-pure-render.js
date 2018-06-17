@@ -1,4 +1,6 @@
-module.exports = function(fileInfo, api, options) {
+import { get } from "lodash";
+
+export default function(fileInfo, api, options) {
   const src = fileInfo.source;
   const js = api.jscodeshift;
   const ast = js(src);
@@ -8,7 +10,6 @@ module.exports = function(fileInfo, api, options) {
     .find(js.ImportDeclaration)
     .filter(node => node.value.source.value.includes("react-pure-render"));
 
-  console.log(reactPureRenderImports);
   if (!reactPureRenderImports.length) {
     return ast.toSource();
   }
@@ -31,23 +32,38 @@ module.exports = function(fileInfo, api, options) {
     })
     .remove();
 
-  // Change parent class to PureComponent
+  // Remove shouldComponentUpate AssignmentExpression
   ast
-    .find(js.ClassDeclaration)
+    .find(js.AssignmentExpression)
     .filter(nodepath => {
       const node = nodepath.value;
-      const name = node.superClass.name || node.superClass.property.name;
-      return name && name === "Component";
+      return (
+        get(node, "left.property.name") === "shouldComponentUpdate" &&
+        get(node, "right.name") === "shouldPureComponentUpdate"
+      );
     })
-    .replaceWith(nodepath => {
-      const node = nodepath.value;
-      if (node.superClass.property) {
-        node.superClass.property.name = "PureComponent";
-      } else {
-        node.superClass.name = "PureComponent";
-      }
-      return node;
-    });
+    .remove();
+
+  // Change parent class to PureComponent
+  function fixSuperClass(collection) {
+    return collection
+      .filter(nodepath => {
+        const node = nodepath.value;
+        const name = node.superClass.name || node.superClass.property.name;
+        return name && name === "Component";
+      })
+      .replaceWith(nodepath => {
+        const node = nodepath.value;
+        if (node.superClass.property) {
+          node.superClass.property.name = "PureComponent";
+        } else {
+          node.superClass.name = "PureComponent";
+        }
+        return node;
+      });
+  }
+  fixSuperClass(ast.find(js.ClassDeclaration));
+  fixSuperClass(ast.find(js.ClassExpression));
 
   // Update imports
   ast
@@ -63,4 +79,4 @@ module.exports = function(fileInfo, api, options) {
     });
 
   return ast.toSource();
-};
+}
