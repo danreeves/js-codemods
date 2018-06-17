@@ -4,10 +4,16 @@ module.exports = function(fileInfo, api, options) {
   const ast = js(src);
 
   // Remove react-pure-render imports
-  ast
+  const reactPureRenderImports = ast
     .find(js.ImportDeclaration)
-    .filter(node => node.value.source.value.includes("react-pure-render"))
-    .remove();
+    .filter(node => node.value.source.value.includes("react-pure-render"));
+
+  console.log(reactPureRenderImports);
+  if (!reactPureRenderImports.length) {
+    return ast.toSource();
+  }
+
+  reactPureRenderImports.remove();
 
   // Remove shouldComponentUpdate ClassProperty
   ast
